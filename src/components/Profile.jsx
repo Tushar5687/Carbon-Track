@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useUserProfile } from '../context/UserContext';
 import { UserButton, SignOutButton } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
+import { generateReportPDF } from '../utils/reportGenerator';
 
 const Profile = () => {
   const { mines, addMine } = useUserProfile();
@@ -24,6 +25,70 @@ const Profile = () => {
   const handleMineClick = (mine) => {
     setSelectedMine(mine);
     setActiveTab('analysis');
+  };
+
+  const handleDownloadReport = () => {
+    if (selectedMine && selectedMine.analysis) {
+      generateReportPDF({
+        mineName: selectedMine.name,
+        analysis: selectedMine.analysis.analysis,
+        suggestions: selectedMine.analysis.suggestions,
+        mineId: selectedMine.id
+      });
+    }
+  };
+
+  const generateQuickReport = () => {
+    if (selectedMine) {
+      const reportData = {
+        mineName: selectedMine.name,
+        location: selectedMine.location,
+        subsidiary: selectedMine.subsidiary,
+        hasAnalysis: selectedMine.hasAnalysis,
+        lastUpdated: selectedMine.analysis?.updatedAt || 'Not analyzed yet',
+        status: selectedMine.hasAnalysis ? 'Analyzed' : 'Pending Analysis'
+      };
+      
+      // Create a simple text report
+      const reportContent = `
+CARBON NEUTRALITY - MINE STATUS REPORT
+=======================================
+
+Mine Information:
+-----------------
+Name: ${reportData.mineName}
+Location: ${reportData.location}
+Subsidiary: ${reportData.subsidiary}
+
+Analysis Status:
+----------------
+Status: ${reportData.status}
+Last Updated: ${reportData.lastUpdated}
+
+${reportData.hasAnalysis ? `
+The mine has been analyzed for carbon emissions. 
+Full detailed report with emission sources and reduction 
+recommendations is available for download.
+` : `
+This mine is pending document analysis. 
+Please upload operational documents to generate 
+emission analysis and reduction strategies.
+`}
+
+Generated on: ${new Date().toLocaleDateString()}
+      `;
+
+      // Download as text file
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Mine_Status_${selectedMine.name.replace(/\s+/g, '_')}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
@@ -181,7 +246,6 @@ const Profile = () => {
                 >
                   📄 Document Analysis
                 </button>
-                {/* UPDATE INSIGHTS TAB - REMOVE COMING SOON */}
                 <button
                   onClick={() => setActiveTab('insights')}
                   className={`flex-shrink-0 px-6 py-3 font-medium border-b-2 transition-colors ${
@@ -192,8 +256,16 @@ const Profile = () => {
                 >
                   💡 AI Insights
                 </button>
-                <button className="flex-shrink-0 px-6 py-3 font-medium border-b-2 border-transparent text-gray-500 cursor-not-allowed">
-                  📋 Reports <span className="ml-2 text-xs bg-gray-700 px-2 py-1 rounded">Coming Soon</span>
+                {/* ACTIVATED REPORTS TAB */}
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className={`flex-shrink-0 px-6 py-3 font-medium border-b-2 transition-colors ${
+                    activeTab === 'reports' 
+                      ? 'border-green-500 text-green-400' 
+                      : 'border-transparent text-gray-300 hover:text-white'
+                  }`}
+                >
+                  📋 Reports
                 </button>
               </div>
 
@@ -276,7 +348,6 @@ const Profile = () => {
                   </div>
                 )}
 
-                {/* ADD INSIGHTS TAB CONTENT */}
                 {activeTab === 'insights' && selectedMine.insights && (
                   <div>
                     <h3 className="text-xl font-bold text-white mb-4">AI Insights</h3>
@@ -309,6 +380,95 @@ const Profile = () => {
                     >
                       Analyze Documents
                     </button>
+                  </div>
+                )}
+
+                {/* REPORTS TAB CONTENT */}
+                {activeTab === 'reports' && (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-white mb-4">Reports & Exports</h3>
+                    
+                    {/* Quick Status Report */}
+                    <div className="bg-blue-500/20 p-6 rounded-lg border border-blue-500/30">
+                      <h4 className="text-lg font-bold text-white mb-3">📋 Quick Status Report</h4>
+                      <p className="text-blue-300 mb-4">
+                        Generate a quick overview report of this mine's current status and analysis progress.
+                      </p>
+                      <button
+                        onClick={generateQuickReport}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        Download Status Report
+                      </button>
+                    </div>
+
+                    {/* Detailed Analysis Report */}
+                    {selectedMine.hasAnalysis && (
+                      <div className="bg-green-500/20 p-6 rounded-lg border border-green-500/30">
+                        <h4 className="text-lg font-bold text-white mb-3">📊 Detailed Analysis Report</h4>
+                        <p className="text-green-300 mb-4">
+                          Download a comprehensive PDF report with emission analysis, reduction recommendations, and actionable insights.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <button
+                            onClick={handleDownloadReport}
+                            className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+                          >
+                            📄 Download Full PDF Report
+                          </button>
+                          <span className="text-green-200 text-sm flex items-center">
+                            Includes charts, tables, and executive summary
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {!selectedMine.hasAnalysis && (
+                      <div className="bg-gray-500/20 p-6 rounded-lg border border-gray-500/30">
+                        <h4 className="text-lg font-bold text-white mb-3">📊 Detailed Analysis Report</h4>
+                        <p className="text-gray-300 mb-4">
+                          Detailed reports are available after document analysis. Please analyze documents first to generate comprehensive reports.
+                        </p>
+                        <button
+                          onClick={() => navigate('/documents', { state: { mineName: selectedMine.name, mineId: selectedMine.id } })}
+                          className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                        >
+                          Analyze Documents
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Report History */}
+                    <div className="bg-purple-500/20 p-6 rounded-lg border border-purple-500/30">
+                      <h4 className="text-lg font-bold text-white mb-3">📈 Report History</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded">
+                          <div>
+                            <p className="text-white font-medium">Status Report</p>
+                            <p className="text-gray-300 text-sm">Basic mine information and analysis status</p>
+                          </div>
+                          <span className="text-green-400 text-sm">Available</span>
+                        </div>
+                        
+                        {selectedMine.hasAnalysis && (
+                          <div className="flex justify-between items-center p-3 bg-white/5 rounded">
+                            <div>
+                              <p className="text-white font-medium">Comprehensive Analysis Report</p>
+                              <p className="text-gray-300 text-sm">Full emission analysis with recommendations</p>
+                            </div>
+                            <span className="text-green-400 text-sm">Available</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-between items-center p-3 bg-white/5 rounded">
+                          <div>
+                            <p className="text-white font-medium">Quarterly Progress Report</p>
+                            <p className="text-gray-300 text-sm">Emission reduction progress tracking</p>
+                          </div>
+                          <span className="text-yellow-400 text-sm">Coming Soon</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -362,7 +522,7 @@ const Profile = () => {
                 </div>
                 <div className="mt-4">
                   {mine.hasAnalysis ? (
-                    <p className="text-green-300 text-sm">Click to view analysis & dashboard</p>
+                    <p className="text-green-300 text-sm">Click to view analysis & reports</p>
                   ) : (
                     <p className="text-blue-300 text-sm">Click to analyze documents</p>
                   )}

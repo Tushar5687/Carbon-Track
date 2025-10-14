@@ -1,8 +1,10 @@
+// components/Documents.jsx
 import { GoogleGenAI } from "@google/genai";
 import React, { useState } from "react";
 import { UserButton, SignOutButton } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserProfile } from '../context/UserContext';
+import { generateReportPDF } from '../utils/reportGenerator';
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 
@@ -65,7 +67,6 @@ Each recommendation must be:
 ${analysisResult}
 --- END ANALYSIS ---
 `;
-
 
     const model = 'gemini-2.5-flash'; 
 
@@ -189,6 +190,17 @@ const Documents = () => {
         }
     };
 
+    const handleDownloadReport = () => {
+        if (extractedText && suggestions && mineId) {
+            generateReportPDF({
+                mineName,
+                analysis: extractedText,
+                suggestions,
+                mineId
+            });
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#013220] font-sans text-white">
             {/* Navigation Header */}
@@ -292,12 +304,25 @@ const Documents = () => {
                     </div>
                 </div>
 
-                {/* Success Message */}
+                {/* Success Message with Download Button */}
                 {extractedText && suggestions && (
-                    <div className="mt-6 p-4 bg-green-500/20 border border-green-500/30 rounded-lg">
-                        <p className="text-green-300 text-center text-lg">
-                            ✅ Analysis completed successfully! Dashboard data has been generated.
-                        </p>
+                    <div className="mt-6 p-6 bg-green-500/20 border border-green-500/30 rounded-lg">
+                        <div className="text-center">
+                            <p className="text-green-300 text-lg mb-4">
+                                ✅ Analysis completed successfully! Professional report is ready.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                                <button
+                                    onClick={handleDownloadReport}
+                                    className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                                >
+                                    📄 Download Professional Report
+                                </button>
+                                <span className="text-gray-300 text-sm">
+                                    Get structured PDF with insights & action plan
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -345,54 +370,59 @@ const Documents = () => {
                     </div>
                 </div>
 
-                {/* Dashboard Button Section */}
-{extractedText && suggestions && (
-  <div className="flex flex-col gap-4 mt-8">
-    <h3 className="text-2xl font-bold text-white">
-      Next Steps
-    </h3>
-    <div className="bg-white/10 p-6 rounded-lg border border-white/20">
-      <div className="text-center">
-        <p className="text-gray-300 mb-4">
-          Your analysis has been processed. Dashboard and insights data has been generated.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => navigate('/profile')}
-            className="bg-white/20 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors"
-          >
-            ← Back to Mines
-          </button>
-          <button
-            onClick={() => {
-              navigate('/dashboard', { 
-                state: { 
-                  mineId: mineId 
-                } 
-              });
-            }}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
-          >
-            📊 View Dashboard
-          </button>
-          {/* ADD INSIGHTS BUTTON */}
-          <button
-            onClick={() => {
-              navigate('/insights', { 
-                state: { 
-                  mineId: mineId 
-                } 
-              });
-            }}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
-          >
-            💡 View Insights
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                {/* Next Steps Section with Download Button */}
+                {extractedText && suggestions && (
+                    <div className="flex flex-col gap-4 mt-8">
+                        <h3 className="text-2xl font-bold text-white">
+                            Next Steps
+                        </h3>
+                        <div className="bg-white/10 p-6 rounded-lg border border-white/20">
+                            <div className="text-center">
+                                <p className="text-gray-300 mb-6">
+                                    Your analysis has been processed. Choose your next action:
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <button
+                                        onClick={() => navigate('/profile')}
+                                        className="bg-white/20 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                                    >
+                                        ← Back to Mines
+                                    </button>
+                                    <button
+                                        onClick={handleDownloadReport}
+                                        className="bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                                    >
+                                        📄 Download Report
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            navigate('/dashboard', { 
+                                                state: { 
+                                                    mineId: mineId 
+                                                } 
+                                            });
+                                        }}
+                                        className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                                    >
+                                        📊 View Dashboard
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            navigate('/insights', { 
+                                                state: { 
+                                                    mineId: mineId 
+                                                } 
+                                            });
+                                        }}
+                                        className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                                    >
+                                        💡 View Insights
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
