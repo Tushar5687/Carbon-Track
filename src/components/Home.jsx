@@ -1,7 +1,10 @@
 import React from "react";
 import { SignedIn, SignedOut, UserButton, SignOutButton } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#013220] dark:bg-[#013220] font-sans text-white">
       {/* Navigation */}
@@ -20,6 +23,12 @@ export default function Home() {
             
             <div className="flex items-center gap-2">
               <SignedIn>
+                <button 
+                  onClick={() => navigate('/profile')}
+                  className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
+                >
+                  My Profile
+                </button>
                 <UserButton />
                 <SignOutButton>
                   <button className="px-4 py-2 text-sm font-bold bg-white text-[#013220] rounded-lg hover:bg-gray-100 transition-colors">
@@ -43,12 +52,24 @@ export default function Home() {
           ></div>
           <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
             <div className="max-w-3xl mx-auto">
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-tight">
-                Track. Analyze. Neutralize Carbon Emissions.
-              </h1>
-              <p className="mt-6 text-lg md:text-xl text-gray-300">
-                Your carbon neutrality pathway platform for coal mines. We provide the tools and insights to help you achieve your sustainability goals.
-              </p>
+              <SignedOut>
+                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-tight">
+                  Track. Analyze. Neutralize Carbon Emissions.
+                </h1>
+                <p className="mt-6 text-lg md:text-xl text-gray-300">
+                  Your carbon neutrality pathway platform for coal mines. We provide the tools and insights to help you achieve your sustainability goals.
+                </p>
+              </SignedOut>
+              
+              <SignedIn>
+                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter leading-tight">
+                  Welcome Back to Carbon Neutrality
+                </h1>
+                <p className="mt-6 text-lg md:text-xl text-gray-300">
+                  Continue your sustainability journey. Access your mine analytics, generate reports, and track your carbon reduction progress.
+                </p>
+              </SignedIn>
+              
               <div className="mt-8 flex justify-center gap-4">
                 <SignedOut>
                   <a href="/login" className="px-8 py-3 text-base font-bold bg-white text-[#013220] rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
@@ -56,43 +77,120 @@ export default function Home() {
                   </a>
                 </SignedOut>
                 <SignedIn>
-                  <a href="/documents" className="px-8 py-3 text-base font-bold bg-white text-[#013220] rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
-                    Get Started
-                  </a>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={() => navigate('/profile')}
+                      className="px-8 py-3 text-base font-bold bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors shadow-lg border border-white/30"
+                    >
+                      View My Mines
+                    </button>
+                    <button 
+                      onClick={() => navigate('/documents')}
+                      className="px-8 py-3 text-base font-bold bg-white text-[#013220] rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                    >
+                      Analyze Documents
+                    </button>
+                  </div>
                 </SignedIn>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Features Section - Keep your existing features section */}
-        
+        {/* Features Section */}
+        <section className="py-16 md:py-24 bg-[#013220]">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white">Key Features</h2>
+              <p className="mt-4 text-lg text-gray-300">
+                Everything you need to manage and reduce your carbon footprint.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Feature 1 */}
+              <div className="flex flex-col bg-white/10 p-6 rounded-xl border border-white/20">
+                <div className="text-3xl mb-4">📊</div>
+                <h3 className="text-xl font-bold text-white mb-2">Mine Portfolio Management</h3>
+                <p className="text-gray-300 text-sm">
+                  Organize and track all your mines in one place with individual analytics and reporting.
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex flex-col bg-white/10 p-6 rounded-xl border border-white/20">
+                <div className="text-3xl mb-4">🤖</div>
+                <h3 className="text-xl font-bold text-white mb-2">AI-Powered Analysis</h3>
+                <p className="text-gray-300 text-sm">
+                  Get intelligent emission insights and reduction recommendations using advanced AI algorithms.
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex flex-col bg-white/10 p-6 rounded-xl border border-white/20">
+                <div className="text-3xl mb-4">🌱</div>
+                <h3 className="text-xl font-bold text-white mb-2">Carbon Reduction Tracking</h3>
+                <p className="text-gray-300 text-sm">
+                  Monitor your progress towards carbon neutrality with detailed metrics and trends.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
-        <section className="bg-[#013220] py-16 md:py-24">
+        <section className="bg-[#006400] py-16 md:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white max-w-2xl mx-auto">
-              Ready to start your journey towards carbon neutrality?
-            </h2>
-            <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
-              Join us and take the first step towards a sustainable future for your coal mine.
-            </p>
-            <div className="mt-8">
-              <SignedOut>
+            <SignedOut>
+              <h2 className="text-3xl md:text-4xl font-bold text-white max-w-2xl mx-auto">
+                Ready to start your journey towards carbon neutrality?
+              </h2>
+              <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
+                Join us and take the first step towards a sustainable future for your coal mine.
+              </p>
+              <div className="mt-8">
                 <a href="/login" className="px-8 py-3 text-base font-bold bg-white text-[#006400] rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
                   Get Started
                 </a>
-              </SignedOut>
-              <SignedIn>
-                <a href="/documents" className="px-8 py-3 text-base font-bold bg-white text-[#006400] rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
-                  Get Started
-                </a>
-              </SignedIn>
-            </div>
+              </div>
+            </SignedOut>
+            
+            <SignedIn>
+              <h2 className="text-3xl md:text-4xl font-bold text-white max-w-2xl mx-auto">
+                Continue Your Carbon Neutrality Journey
+              </h2>
+              <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
+                Access your mine analytics, generate new reports, and track your emission reduction progress.
+              </p>
+              <div className="mt-8 flex justify-center gap-4">
+                <button 
+                  onClick={() => navigate('/profile')}
+                  className="px-8 py-3 text-base font-bold bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors shadow-lg border border-white/30"
+                >
+                  View Mine Portfolio
+                </button>
+                <button 
+                  onClick={() => navigate('/documents')}
+                  className="px-8 py-3 text-base font-bold bg-white text-[#006400] rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                >
+                  Analyze New Document
+                </button>
+              </div>
+            </SignedIn>
           </div>
         </section>
       </main>
 
-      {/* Footer - Keep your existing footer */}
+      {/* Footer */}
+      <footer className="bg-[#013220] border-t border-gray-300/20 py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-gray-300">
+            © 2024 Carbon Neutrality Platform. All rights reserved.
+          </p>
+          <p className="text-gray-400 text-sm mt-2">
+            Empowering coal mines towards sustainable operations
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
