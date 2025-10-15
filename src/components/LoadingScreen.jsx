@@ -25,7 +25,7 @@ const LoadingScreen = () => {
           
           {/* Loading Text */}
           <h3 className="text-xl font-bold text-emerald-300 mb-2">
-            Carbon Neutrality
+            Carbon Track
           </h3>
           <p className="text-emerald-200 text-sm">
             Loading...

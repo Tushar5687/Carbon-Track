@@ -220,7 +220,7 @@ const Documents = () => {
                                 </svg>
                             </div>
                             <h2 className="text-xl font-bold bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent">
-                                Carbon Neutrality
+                                Carbon Track
                             </h2>
                         </div>
                         
@@ -235,17 +235,13 @@ const Documents = () => {
                                 onClick={() => navigate('/profile')}
                                 className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
                             >
-                                Operational Mines
+                                Mines
                             </button>
                         </nav>
                         
                         <div className="flex items-center gap-3">
                             <UserButton />
-                            <SignOutButton>
-                                <button className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300 border border-white/30">
-                                    Sign Out
-                                </button>
-                            </SignOutButton>
+                           
                         </div>
                     </div>
                 </div>

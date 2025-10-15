@@ -33,23 +33,24 @@ export default function Home() {
                   </svg>
                 </div>
                 <h2 className="text-xl font-bold bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent">
-                  Carbon Neutrality
+                  Carbon Track
                 </h2>
               </div>
               
               <nav className="hidden md:flex items-center gap-6">
+                <SignedIn>
                 <button 
                   onClick={() => navigateWithLoading('/')}
                   className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
                 >
                   Home
                 </button>
-                <SignedIn>
+                
                   <button 
                     onClick={() => navigateWithLoading('/profile')}
                     className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
                   >
-                    Operational Mines
+                    Mines
                   </button>
                 </SignedIn>
               </nav>
@@ -57,11 +58,7 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <SignedIn>
                   <UserButton />
-                  <SignOutButton>
-                    <button className="px-4 py-2 text-sm font-bold bg-white/20 text-white rounded-lg hover:bg-white/30 transition-all duration-300 border border-white/30">
-                      Sign Out
-                    </button>
-                  </SignOutButton>
+                 
                 </SignedIn>
               </div>
             </div>
@@ -143,7 +140,7 @@ export default function Home() {
                         onClick={() => navigateWithLoading('/profile')}
                         className="inline-flex items-center px-8 py-4 text-lg font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-2xl hover:from-emerald-600 hover:to-green-700 transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25 hover:scale-105 transform"
                       >
-                        View Operational Mines
+                        View Mines
                         <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
