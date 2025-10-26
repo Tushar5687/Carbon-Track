@@ -1,4 +1,3 @@
-// components/Home.jsx
 import React, { useState, useEffect } from "react";
 import { SignedIn, SignedOut, UserButton, SignOutButton } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -39,18 +38,23 @@ export default function Home() {
               
               <nav className="hidden md:flex items-center gap-6">
                 <SignedIn>
-                <button 
-                  onClick={() => navigateWithLoading('/')}
-                  className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
-                >
-                  Home
-                </button>
-                
+                  <button 
+                    onClick={() => navigateWithLoading('/')}
+                    className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
+                  >
+                    Home
+                  </button>
                   <button 
                     onClick={() => navigateWithLoading('/profile')}
                     className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
                   >
                     Mines
+                  </button>
+                  <button 
+                    onClick={() => navigateWithLoading('/leaderboard')}
+                    className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
+                  >
+                    Leaderboard
                   </button>
                 </SignedIn>
               </nav>
@@ -58,7 +62,6 @@ export default function Home() {
               <div className="flex items-center gap-3">
                 <SignedIn>
                   <UserButton />
-                 
                 </SignedIn>
               </div>
             </div>

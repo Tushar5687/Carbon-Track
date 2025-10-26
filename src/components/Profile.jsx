@@ -1,4 +1,3 @@
-// components/Profile.jsx
 import React, { useState } from 'react';
 import { useUserProfile } from '../context/UserContext';
 import { UserButton, SignOutButton } from '@clerk/clerk-react';
@@ -127,11 +126,16 @@ Generated on: ${new Date().toLocaleDateString()}
               >
                 Mines
               </button>
+              <button 
+                onClick={() => navigate('/leaderboard')}
+                className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
+              >
+                Leaderboard
+              </button>
             </nav>
             
             <div className="flex items-center gap-3">
               <UserButton />
-             
             </div>
           </div>
         </div>
@@ -155,7 +159,7 @@ Generated on: ${new Date().toLocaleDateString()}
           </button>
         </div>
 
-        {/* Add Mine Modal - UPDATED STYLING */}
+        {/* Add Mine Modal */}
         {showAddMine && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
             <div className="bg-gradient-to-br from-[#013220] to-[#004d00] border border-emerald-500/30 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
@@ -226,7 +230,7 @@ Generated on: ${new Date().toLocaleDateString()}
           </div>
         )}
 
-        {/* Analysis Modal - UPDATED STYLING */}
+        {/* Analysis Modal */}
         {selectedMine && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
             <div className="bg-gradient-to-br from-[#013220] to-[#004d00] border border-emerald-500/30 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
@@ -246,7 +250,7 @@ Generated on: ${new Date().toLocaleDateString()}
                 </button>
               </div>
 
-              {/* Navigation Tabs - UPDATED STYLING */}
+              {/* Navigation Tabs */}
               <div className="flex border-b border-emerald-500/30 bg-white/5">
                 <button
                   onClick={() => setActiveTab('dashboard')}
@@ -408,7 +412,7 @@ Generated on: ${new Date().toLocaleDateString()}
                   </div>
                 )}
 
-                {/* REPORTS TAB CONTENT - UPDATED STYLING */}
+                {/* REPORTS TAB CONTENT */}
                 {activeTab === 'reports' && (
                   <div className="space-y-8">
                     <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent mb-6">
@@ -503,7 +507,7 @@ Generated on: ${new Date().toLocaleDateString()}
           </div>
         )}
 
-        {/* Mines Grid - UPDATED STYLING */}
+        {/* Mines Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {mines.length === 0 ? (
             <div className="col-span-full text-center py-16">

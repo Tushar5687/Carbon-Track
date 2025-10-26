@@ -1,7 +1,6 @@
-// components/Documents.jsx
 import { GoogleGenAI } from "@google/genai";
 import React, { useState } from "react";
-import { UserButton, SignOutButton } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserProfile } from '../context/UserContext';
 import { generateReportPDF } from '../utils/reportGenerator';
@@ -237,11 +236,16 @@ const Documents = () => {
                             >
                                 Mines
                             </button>
+                            <button 
+                                onClick={() => navigate('/leaderboard')}
+                                className="text-emerald-200 hover:text-white transition-colors font-medium px-4 py-2 rounded-lg hover:bg-white/10"
+                            >
+                                Leaderboard
+                            </button>
                         </nav>
                         
                         <div className="flex items-center gap-3">
                             <UserButton />
-                           
                         </div>
                     </div>
                 </div>

@@ -15,6 +15,7 @@ import Profile from './components/Profile.jsx';
 import MineAnalytics from './components/MineAnalytics.jsx';
 import DashboardPage from './components/DashboardPage.jsx';
 import InsightsPage from './components/InsightsPage.jsx';
+import Leaderboard from './components/Leaderboard.jsx';
 import { useUserProfile } from './context/UserContext';
 
 function ProfileCheck({ children }) {
@@ -87,13 +88,23 @@ export default function App() {
         }
       />
 
-      {/* ADD INSIGHTS ROUTE */}
       <Route
         path="/insights"
         element={
           <SignedIn>
             <ProfileCheck>
               <InsightsPage />
+            </ProfileCheck>
+          </SignedIn>
+        }
+      />
+
+      <Route
+        path="/leaderboard"
+        element={
+          <SignedIn>
+            <ProfileCheck>
+              <Leaderboard />
             </ProfileCheck>
           </SignedIn>
         }
