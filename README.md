@@ -1,16 +1,51 @@
-# React + Vite
+# Carbon Track - AI Mining Emission Analytics Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An AI-powered platform that helps mining companies track, analyze, and reduce their carbon emissions through intelligent document analysis and actionable insights.
 
-Currently, two official plugins are available:
+![Live Link](https://carbon-track-l3hf.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+- **AI Document Analysis** – Upload mining PDFs and automatically extract emission sources
+- **Interactive Dashboard** – Real-time visualization with charts & trends
+- **Automated Reporting** – Generate professional PDF sustainability reports
+- **AI Insights** – Actionable recommendations for emission reduction
+- **Performance Leaderboard** – Compare mines based on sustainability performance
+- **Multi-mine Management** – Manage multiple mining operations in one place
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+**Frontend**
+- React.js (Context API)
+- Tailwind CSS
+- Chart.js
+- jsPDF + autoTable
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**AI & Backend**
+- Google Gemini API
+- Clerk Authentication
+- localStorage persistence
+- Deployed on Vercel
+
+## Project Structure
+```bash
+src/
+├── components/          # React components
+│   ├── DashboardPage.jsx
+│   ├── Documents.jsx
+│   ├── InsightsPage.jsx
+│   ├── Leaderboard.jsx
+│   └── Profile.jsx
+├── context/            # State management
+│   └── UserContext.js
+├── utils/              # Helper functions
+│   └── reportGenerator.js
+└── App.jsx             # Main application
+```bash
+
+## 📦 Installation
+
+```bash
+git clone myrepolink
+cd carbon-track
+npm install
