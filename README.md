@@ -2,7 +2,7 @@
 
 An AI-powered platform that helps mining companies track, analyze, and reduce their carbon emissions through intelligent document analysis and actionable insights.
 
-![Live Link](https://carbon-track-l3hf.vercel.app/)
+[Live Link](https://carbon-track-l3hf.vercel.app/)
 
 ## 🚀 Features
 
@@ -41,9 +41,9 @@ src/
 ├── utils/              # Helper functions
 │   └── reportGenerator.js
 └── App.jsx             # Main application
-```bash
 
-## 📦 Installation
+
+## Installation
 
 ```bash
 git clone myrepolink
