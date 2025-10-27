@@ -33,6 +33,11 @@ An AI-powered platform that helps mining companies track, analyze, and reduce th
 - localStorage persistence
 - Deployed on Vercel
 
+---
+##  👥Authors
+
+Tushar Sahni — [Github Id](https://github.com/Tushar5687)
+Shivam Chauhan — [Github Id](https://github.com/Shivam3445)
 
 ---
 ## 📂 Project Structure
@@ -52,13 +57,3 @@ src/
 
 
 
-## ​​ Setup Instructions
-
-```bash
-git clone <your-repo-link>
-cd carbon-track
-npm install
-npm run dev
-
-# 4. Run the app locally
-npm run dev
