@@ -1,158 +1,22 @@
-import { GoogleGenAI } from "@google/genai";
 import React, { useState } from "react";
 import { UserButton } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserProfile } from '../context/UserContext';
 import { generateReportPDF } from '../utils/reportGenerator';
+import { analyzeDocument } from '../utils/api';
 
-const API_KEY = import.meta.env.VITE_API_KEY;
-
-// --- Helper Function (Outside the component) ---
-function fileToGenerativePart(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64Data = reader.result.split(',')[1];
-            resolve({
-                inlineData: {
-                    data: base64Data,
-                    mimeType: file.type
-                }
-            });
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-async function generateEmissionReductionSuggestions(analysisResult, ai, mineName) {
-  const prompt = `
-Based on the following mining emission analysis for ${mineName} mine, generate a 
-comprehensive and detailed list of **30 to 40 actionable, evidence-based recommendations** 
-to reduce greenhouse gas emissions and improve overall sustainability performance.
-
-Each recommendation must be:
-- Specific to ${mineName}'s operations, mining method, and emission profile.
-- Technically sound, realistic, and measurable (include quantitative goals where possible).
-- Grouped under relevant categories — choose only those that apply, but feel free to 
-  introduce new categories as needed.
-
-📘 **Potential Categories (choose whichever fit best or add your own):**
-1. Operational Efficiency & Equipment Optimization  
-2. Energy Transition & Renewable Integration  
-3. Carbon Capture, Utilization & Storage (CCUS)  
-4. Technology & Automation  
-5. Process Improvement & Waste Minimization  
-6. Water & Dust Management  
-7. Workforce Training & Behavioral Change  
-8. Environmental Management & Rehabilitation  
-9. Policy Compliance & Reporting  
-10. Circular Economy & Resource Recovery  
-11. Logistics & Transport Optimization  
-12. Community & Ecosystem Impact Reduction  
-13. Digital Transformation & Smart Monitoring  
-14. Research, Innovation & Partnerships  
-
-📑 **Formatting & Structure:**
-- Use clear Markdown headings for each category.
-- Provide **3–5 concrete recommendations** under each chosen category.
-- Each point should start with an action verb (e.g., *Implement*, *Upgrade*, *Monitor*, *Adopt*).
-- Wherever relevant, add expected outcomes (e.g., *"reduces diesel use by 12%"* or *"saves 400 MWh/year"*).
-- Avoid generic advice — tailor everything to ${mineName}'s operational scale, mining type (e.g., underground, surface), and emission data trends.
-
-📊 **Optional (if data allows):**
-- Start with a short **"Emission Hotspot Summary"** highlighting key sources of emissions from the analysis before the recommendations.
-
---- MINING EMISSION ANALYSIS FOR ${mineName.toUpperCase()} MINE ---
-${analysisResult}
---- END ANALYSIS ---
-`;
-
-    const model = 'gemini-2.5-flash'; 
-
-    try {
-        const response = await ai.models.generateContent({
-            model: model,
-            contents: [{ text: prompt }]
-        });
-        return response.text;
-    } catch (error) {
-        console.error("Gemini suggestion generation failed:", error);
-        throw new Error(`Suggestion generation failed: ${error.message}`);
-    }
-}
-
-// --- React Component ---
 const Documents = () => {
     const [file, setFile] = useState(null);
     const [extractedText, setExtractedText] = useState("");
     const [loading, setLoading] = useState(false);
     const [suggestions, setSuggestions] = useState("");
-    const ai = new GoogleGenAI({ apiKey: API_KEY });
     const navigate = useNavigate();
     const location = useLocation();
     const { updateMineAnalysis } = useUserProfile();
 
-    // Get mine data from navigation state
     const mineName = location.state?.mineName || "General Mining Operations";
     const mineId = location.state?.mineId;
 
-    const extractTextFromPDF = async (pdfFile) => {
-        if (!pdfFile || pdfFile.type !== 'application/pdf') {
-            return "Error: Invalid file or not a PDF.";
-        }
-        
-        const prompt = `
-            You are a mining emission analysis specialist. Analyze this mining operations document for ${mineName} mine and provide:
-
-            # Mining Analysis for ${mineName} Mine (Sources and Percentage of Emissions by Sources)
-            
-            Extract and calculate the percentage distribution of greenhouse gas emissions by source specifically for ${mineName} mine. Focus on:
-            - Heavy machinery and equipment emissions at ${mineName}
-            - Transportation vehicles (trucks, haulers) at ${mineName}
-            - Electricity consumption from grid for ${mineName}
-            - On-site power generation at ${mineName}
-            - Ventilation systems in ${mineName}
-            - Blasting operations at ${mineName}
-            - Coal processing activities at ${mineName}
-            - Fugitive emissions from ${mineName}
-            - Other identified sources specific to ${mineName}
-            
-            Present as: "Source: X%" and mention it's for ${mineName} mine.
-            
-            # Classification of Sources for ${mineName} Mine
-            
-            Categorize the emission sources into these types specifically for ${mineName}:
-            - Scope 1 Emissions (Direct emissions from owned/controlled sources at ${mineName})
-            - Scope 2 Emissions (Indirect emissions from purchased electricity/steam for ${mineName})
-            - Scope 3 Emissions (Other indirect emissions in value chain of ${mineName})
-            - Stationary Combustion at ${mineName}
-            - Mobile Combustion at ${mineName}
-            - Process Emissions at ${mineName}
-            - Fugitive Emissions from ${mineName}
-            
-            For each classification, list the specific sources that fall under that category at ${mineName} mine.
-            
-            Provide the analysis in clear, structured markdown format with proper headings, specifically mentioning ${mineName} throughout.
-        `;
-        
-        const model = 'gemini-2.5-flash';
-
-        try {
-            const pdfPart = await fileToGenerativePart(pdfFile);
-            const response = await ai.models.generateContent({
-                model: model,
-                contents: [
-                    pdfPart,
-                    { text: prompt }
-                ]
-            });
-            return response.text;
-        } catch (error) {
-            console.error("Gemini API extraction failed:", error);
-            return "Extraction failed due to an API error. Check the console for details.";
-        }
-    };
-    
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
         setExtractedText("");
@@ -160,26 +24,21 @@ const Documents = () => {
     };
 
     const handleExtract = async () => {
-        if (!file) return;
+        if (!file || !mineId) return;
 
         setLoading(true);
         setExtractedText(""); 
         setSuggestions("");
 
         try {
-            const result = await extractTextFromPDF(file);
-            setExtractedText(result);
+            const result = await analyzeDocument(mineId, mineName, file);
+            setExtractedText(result.analysis);
+            setSuggestions(result.suggestions);
 
-            const suggestionsResult = await generateEmissionReductionSuggestions(result, ai, mineName);
-            setSuggestions(suggestionsResult);
-
-            // Store analysis for the specific mine
-            if (mineId) {
-                updateMineAnalysis(mineId, {
-                    analysis: result,
-                    suggestions: suggestionsResult
-                });
-            }
+            updateMineAnalysis(mineId, {
+                analysis: result.analysis,
+                suggestions: result.suggestions
+            });
 
         } catch (error) {
             setExtractedText("Failed to extract text. Please try again.");
@@ -202,7 +61,6 @@ const Documents = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#013220] via-[#006400] to-[#004d00] font-sans text-white">
-            {/* Updated Navigation Header */}
             <header className="sticky top-0 z-50 bg-[#013220]/90 backdrop-blur-sm border-b border-emerald-500/30">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
@@ -251,9 +109,7 @@ const Documents = () => {
                 </div>
             </header>
 
-            {/* Main Content */}
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header Section with Mine Context */}
                 <div className="text-center mb-12">
                     <div className="mb-6 p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl border border-blue-500/30 inline-block backdrop-blur-sm">
                         <p className="text-blue-300 font-semibold flex items-center justify-center gap-2 text-lg">
@@ -269,7 +125,6 @@ const Documents = () => {
                     </p>
                 </div>
 
-                {/* Upload Section */}
                 <div className="flex flex-col gap-8">
                     <div className="flex flex-col items-center justify-center gap-8 rounded-2xl border-2 border-dashed border-emerald-500/30 bg-gradient-to-br from-white/10 to-white/5 px-8 py-16 text-center backdrop-blur-sm hover:border-emerald-400/50 transition-all duration-300">
                         <div className="flex flex-col items-center gap-4">
@@ -319,7 +174,6 @@ const Documents = () => {
                     </div>
                 </div>
 
-                {/* Success Message with Download Button */}
                 {extractedText && suggestions && (
                     <div className="mt-8 p-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl backdrop-blur-sm">
                         <div className="text-center">
@@ -342,7 +196,6 @@ const Documents = () => {
                     </div>
                 )}
 
-                {/* Mining Analysis Result */}
                 <div className="flex flex-col gap-6 mt-12">
                     <h3 className="text-3xl font-bold text-white">
                         {mineName} Emission Analysis 📊
@@ -364,7 +217,6 @@ const Documents = () => {
                     </div>
                 </div>
 
-                {/* Emission Reduction Suggestions */}
                 <div className="flex flex-col gap-6 mt-12">
                     <h3 className="text-3xl font-bold text-white">
                         {mineName} Emission Reduction Recommendations 🌱
@@ -386,7 +238,6 @@ const Documents = () => {
                     </div>
                 </div>
 
-                {/* Next Steps Section with Download Button */}
                 {extractedText && suggestions && (
                     <div className="flex flex-col gap-6 mt-12">
                         <h3 className="text-3xl font-bold bg-gradient-to-r from-emerald-300 to-green-300 bg-clip-text text-transparent">

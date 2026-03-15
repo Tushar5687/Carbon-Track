@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useUserProfile } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { saveProfile } from '../utils/api';
 
 const ProfileSetup = () => {
   const { updateUserProfile } = useUserProfile();
@@ -49,27 +50,32 @@ const ProfileSetup = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  if (!validateEmail(formData.officialEmail)) {
-    alert('Please use an official government email address (.gov.in, .nic.in, etc.)');
-    return;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateEmail(formData.officialEmail)) {
+      alert('Please use an official government email address (.gov.in, .nic.in, etc.)');
+      return;
+    }
 
-  if (formData.mines.length === 0) {
-    alert('Please add at least one mine');
-    return;
-  }
+    if (formData.mines.length === 0) {
+      alert('Please add at least one mine');
+      return;
+    }
 
-  if (!formData.subsidiary) {
-    alert('Please select your coal subsidiary');
-    return;
-  }
+    if (!formData.subsidiary) {
+      alert('Please select your coal subsidiary');
+      return;
+    }
 
-  updateUserProfile(formData);
-  navigate('/profile'); // Redirect to profile page instead of home
-};
+    try {
+      await saveProfile(formData);
+      navigate('/profile');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#013220] flex items-center justify-center p-4">
@@ -78,7 +84,6 @@ const ProfileSetup = () => {
         <p className="text-gray-600 mb-8">Please provide your official details as an Environment Officer</p>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Full Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Full Name *
@@ -93,7 +98,6 @@ const ProfileSetup = () => {
             />
           </div>
 
-          {/* Official Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Official Email Address *
@@ -109,7 +113,6 @@ const ProfileSetup = () => {
             <p className="text-sm text-gray-500 mt-1">Must be a government email (.gov.in, .nic.in, etc.)</p>
           </div>
 
-          {/* Subsidiary */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Coal Subsidiary *
@@ -127,7 +130,6 @@ const ProfileSetup = () => {
             </select>
           </div>
 
-          {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Location *
@@ -142,7 +144,6 @@ const ProfileSetup = () => {
             />
           </div>
 
-          {/* Mines */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Mines Under Supervision *
@@ -165,7 +166,6 @@ const ProfileSetup = () => {
               </button>
             </div>
             
-            {/* Mine List */}
             <div className="space-y-2 max-h-32 overflow-y-auto">
               {formData.mines.map((mine, index) => (
                 <div key={index} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg">
@@ -183,7 +183,6 @@ const ProfileSetup = () => {
             <p className="text-sm text-gray-500 mt-1">Add all mines you supervise</p>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"

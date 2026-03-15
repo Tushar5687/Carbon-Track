@@ -1,81 +1,69 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
+import { getMines, createMine as apiCreateMine, saveDashboardData } from '../utils/api';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const { user, isLoaded } = useUser();
   const [mines, setMines] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isLoaded && user) {
-      const userEmail = user.primaryEmailAddress?.emailAddress;
-      if (userEmail) {
-        const storedMines = localStorage.getItem(`mines_${userEmail}`);
-        if (storedMines) {
-          try {
-            setMines(JSON.parse(storedMines));
-          } catch (error) {
-            console.error('Error parsing stored mines:', error);
-            setMines([]);
-          }
-        }
-      }
+      fetchMines();
     }
   }, [user, isLoaded]);
 
-  const addMine = (mineName, location, subsidiary) => {
-    setMines(prev => {
-      const newMine = {
-        id: Date.now(),
-        name: mineName,
-        location: location,
-        subsidiary: subsidiary,
-        hasAnalysis: false,
-        analysis: null,
-        dashboard: null,
-        insights: null,
-        createdAt: new Date().toISOString()
-      };
-      const updatedMines = [...prev, newMine];
-      
-      const userEmail = user?.primaryEmailAddress?.emailAddress;
-      if (userEmail) {
-        localStorage.setItem(`mines_${userEmail}`, JSON.stringify(updatedMines));
-      }
-      
-      return updatedMines;
-    });
+  const fetchMines = async () => {
+    try {
+      setLoading(true);
+      const response = await getMines();
+      setMines(response.mines || []);
+    } catch (error) {
+      console.error('Error fetching mines:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateMineAnalysis = (mineId, analysisData) => {
-    setMines(prev => {
-      const updatedMines = prev.map(mine => {
-        if (mine.id === mineId) {
-          const dashboardData = generateDashboardData(analysisData.analysis, mine.name);
-          const insightsData = generateInsightsData(analysisData.suggestions, mine.name);
-          
-          return { 
-            ...mine, 
-            hasAnalysis: true,
-            analysis: {
-              ...analysisData,
-              updatedAt: new Date().toISOString()
-            },
-            dashboard: dashboardData,
-            insights: insightsData
-          };
-        }
-        return mine;
-      });
-      
-      const userEmail = user?.primaryEmailAddress?.emailAddress;
-      if (userEmail) {
-        localStorage.setItem(`mines_${userEmail}`, JSON.stringify(updatedMines));
+  const addMine = async (mineName, location, subsidiary) => {
+    try {
+      const response = await apiCreateMine({ name: mineName, location, subsidiary });
+      setMines(prev => [...prev, response.mine]);
+      return response.mine;
+    } catch (error) {
+      console.error('Error creating mine:', error);
+      throw error;
+    }
+  };
+
+  const updateMineAnalysis = async (mineId, analysisData) => {
+    const mineName = mines.find(m => m.id === mineId)?.name || 'Mine';
+    const dashboardData = generateDashboardData(analysisData.analysis, mineName);
+    const insightsData = generateInsightsData(analysisData.suggestions, mineName);
+
+    setMines(prev => prev.map(mine => {
+      if (mine.id === mineId) {
+        return {
+          ...mine,
+          hasAnalysis: true,
+          analysis: {
+            ...analysisData,
+            updatedAt: new Date().toISOString()
+          },
+          dashboard: dashboardData,
+          insights: insightsData
+        };
       }
-      
-      return updatedMines;
-    });
+      return mine;
+    }));
+
+    try {
+      await saveDashboardData(mineId, dashboardData, insightsData);
+    } catch (error) {
+      console.error('Error saving dashboard data:', error);
+    }
   };
 
   const generateInsightsData = (suggestionsText, mineName) => {
@@ -169,7 +157,7 @@ export const UserProvider = ({ children }) => {
 
   const isRecommendationLine = (line) => {
     return (
-      line.match(/^[-*•]\s+/) ||
+      line.match(/^[-*-]\s+/) ||
       line.match(/^\d+\.\s+/) ||
       line.match(/^[A-Z].*[.!?]$/) ||
       (line.match(/^[a-z]/) && line.length > 30)
@@ -178,7 +166,7 @@ export const UserProvider = ({ children }) => {
 
   const extractRecommendation = (line) => {
     return line
-      .replace(/^[-*•]\s+/, '')
+      .replace(/^[-*-]\s+/, '')
       .replace(/^\d+\.\s+/, '')
       .trim();
   };
@@ -229,11 +217,9 @@ export const UserProvider = ({ children }) => {
     let timeline = '6-12 months';
 
     const highPriorityWords = ['immediate', 'urgent', 'critical', 'essential', 'high priority', 'significant reduction', 'major impact'];
-    const mediumPriorityWords = ['implement', 'upgrade', 'optimize', 'improve', 'enhance'];
     const lowPriorityWords = ['explore', 'research', 'consider', 'investigate', 'long-term', 'potential'];
     
     const highImpactWords = ['significant', 'major', 'substantial', 'dramatic', 'high impact'];
-    const mediumImpactWords = ['moderate', 'improved', 'better', 'enhanced'];
     const lowImpactWords = ['minor', 'small', 'incremental', 'marginal'];
 
     if (highPriorityWords.some(word => text.includes(word))) {
@@ -532,7 +518,9 @@ export const UserProvider = ({ children }) => {
     <UserContext.Provider value={{ 
       mines, 
       addMine,
-      updateMineAnalysis 
+      updateMineAnalysis,
+      loading,
+      fetchMines
     }}>
       {children}
     </UserContext.Provider>
