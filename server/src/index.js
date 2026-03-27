@@ -7,6 +7,7 @@ import profileRoutes from './routes/profiles.js';
 import mineRoutes from './routes/mines.js';
 import analysisRoutes from './routes/analysis.js';
 import storageRoutes from './routes/storage.js';
+import leaderboardRoutes from './routes/leaderboard.js';
 
 dotenv.config();
 const app = express();
@@ -18,6 +19,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://carbon-track-l3hf.vercel.app',
+    'https://carbon-track-ashy.vercel.app',
   ],
   credentials: true
 }));
@@ -25,7 +27,11 @@ app.use(cors({
 // WHY: Parse JSON bodies. 50mb limit for base64 PDF data.
 app.use(express.json({ limit: '50mb' }));
 
-// WHY: Applies Clerk auth check to all routes
+// WHY: Leaderboard is public — registered BEFORE clerkAuth so it doesn't
+// require a Clerk session token. All other routes remain protected.
+app.use('/api/leaderboard', leaderboardRoutes);
+
+// WHY: Applies Clerk auth check to all routes below this line
 app.use(clerkAuth);
 
 // Each route file handles one resource

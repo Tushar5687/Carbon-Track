@@ -1,16 +1,14 @@
-// WHY: Replaces ProfileSetup localStorage logic.
 import { Router } from 'express';
-import { requireAuthentication } from '../middleware/auth.js';
 import supabase from '../config/supabase.js';
+import { getUserId } from '../middleware/auth.js';
 
 const router = Router();
-router.use(requireAuthentication);
 
-// GET /api/profiles/me — Check if user has profile
-// Replaces: localStorage.getItem(`profile_${email}`)
+// GET profile
 router.get('/me', async (req, res) => {
   try {
-    const clerkId = req.auth.userId;
+    const clerkId = getUserId(req);
+
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
@@ -18,21 +16,35 @@ router.get('/me', async (req, res) => {
       .single();
 
     if (error && error.code === 'PGRST116') {
-      return res.json({ profile: null }); // Not found = no profile yet
+      return res.json({ profile: null });
     }
-    if (error) throw error;
+
+    if (error) {
+      console.error("FETCH PROFILE ERROR:", error);
+      return res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+
     res.json({ profile: data });
+
   } catch (err) {
+    console.error("SERVER ERROR:", err);
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
 
-// POST /api/profiles — Save/update profile
-// Replaces: updateUserProfile(formData)
+// POST profile
 router.post('/', async (req, res) => {
   try {
-    const clerkId = req.auth.userId;
-    const { fullName, officialEmail, designation, subsidiary, location, phone } = req.body;
+    const clerkId = getUserId(req);
+
+    const {
+      fullName,
+      officialEmail,
+      designation,
+      subsidiary,
+      location,
+      phone
+    } = req.body;
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -40,13 +52,27 @@ router.post('/', async (req, res) => {
         clerk_id: clerkId,
         full_name: fullName,
         official_email: officialEmail,
-        designation, subsidiary, location, phone
+        designation,
+        subsidiary,
+        location,
+        phone,
+        updated_at: new Date().toISOString()
       }, { onConflict: 'clerk_id' })
-      .select().single();
+      .select()
+      .single();
 
-    if (error) throw error;
+    console.log("PROFILE UPSERT:", data);
+    console.log("PROFILE ERROR:", error);
+
+    if (error) {
+      console.error("PROFILE UPSERT ERROR:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
     res.json({ profile: data });
+
   } catch (err) {
+    console.error("SERVER ERROR:", err);
     res.status(500).json({ error: 'Failed to save profile' });
   }
 });

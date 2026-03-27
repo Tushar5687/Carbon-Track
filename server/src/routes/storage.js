@@ -1,14 +1,14 @@
-// WHY: Generates signed download URLs for uploaded PDFs
 import { Router } from 'express';
-import { requireAuthentication } from '../middleware/auth.js';
 import supabase from '../config/supabase.js';
+import { getUserId } from '../middleware/auth.js';
 
 const router = Router();
-router.use(requireAuthentication);
 
-// GET /api/storage/download/:mineId
 router.get('/download/:mineId', async (req, res) => {
   try {
+    const clerkId = getUserId(req);
+    if (!clerkId) return res.status(401).json({ error: 'Not authenticated' });
+
     const { data: analysis } = await supabase
       .from('mine_analyses').select('pdf_url')
       .eq('mine_id', req.params.mineId).single();
@@ -18,7 +18,7 @@ router.get('/download/:mineId', async (req, res) => {
     const filePath = analysis.pdf_url.split('/mining-pdfs/')[1];
     const { data: signedUrl } = await supabase.storage
       .from('mining-pdfs')
-      .createSignedUrl(filePath, 3600); // 1 hour expiry
+      .createSignedUrl(filePath, 3600);
 
     res.json({ downloadUrl: signedUrl.signedUrl });
   } catch (err) {

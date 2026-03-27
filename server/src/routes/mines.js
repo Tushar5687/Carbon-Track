@@ -1,16 +1,13 @@
-// WHY: Replaces mine CRUD in UserContext (localStorage).
 import { Router } from 'express';
-import { requireAuthentication } from '../middleware/auth.js';
+import { getUserId } from '../middleware/auth.js';
 import supabase from '../config/supabase.js';
 
 const router = Router();
-router.use(requireAuthentication);
 
-// GET /api/mines — Get all user's mines with analysis data
-// Replaces: JSON.parse(localStorage.getItem(`mines_${email}`))
 router.get('/', async (req, res) => {
   try {
-    const clerkId = req.auth.userId;
+    const clerkId = getUserId(req);
+    if (!clerkId) return res.status(401).json({ error: 'Not authenticated' });
 
     const { data: mines, error } = await supabase
       .from('mines')
@@ -24,7 +21,6 @@ router.get('/', async (req, res) => {
 
     if (error) throw error;
 
-    // Transform to match frontend's expected shape
     const transformedMines = mines.map(mine => {
       const analysis = mine.mine_analyses?.[0] || null;
       return {
@@ -46,15 +42,16 @@ router.get('/', async (req, res) => {
 
     res.json({ mines: transformedMines });
   } catch (err) {
+    console.error('Error fetching mines:', err);
     res.status(500).json({ error: 'Failed to fetch mines' });
   }
 });
 
-// POST /api/mines — Create a mine
-// Replaces: addMine() in UserContext
 router.post('/', async (req, res) => {
   try {
-    const clerkId = req.auth.userId;
+    const clerkId = getUserId(req);
+    if (!clerkId) return res.status(401).json({ error: 'Not authenticated' });
+
     const { name, location, subsidiary } = req.body;
 
     const { data, error } = await supabase
@@ -74,14 +71,16 @@ router.post('/', async (req, res) => {
       }
     });
   } catch (err) {
+    console.error('Error creating mine:', err);
     res.status(500).json({ error: 'Failed to create mine' });
   }
 });
 
-// DELETE /api/mines/:mineId — Delete a mine
 router.delete('/:mineId', async (req, res) => {
   try {
-    const clerkId = req.auth.userId;
+    const clerkId = getUserId(req);
+    if (!clerkId) return res.status(401).json({ error: 'Not authenticated' });
+
     const { error } = await supabase
       .from('mines')
       .delete()
