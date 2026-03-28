@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 // WHY: CORS lets your React app (Vercel domain) call this API.
 // Without it, browsers block cross-origin requests.
 app.use(cors({
-  origin:"https://carbon-track1.vercel.app/",
+  origin:"https://carbon-track1.vercel.app",
   credentials: true
 }));
 
