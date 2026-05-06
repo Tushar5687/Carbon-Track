@@ -19,7 +19,7 @@ Carbon Track enables organizations to upload data, generate insights, and track 
 
 ### 📊 Smart Dashboard
 
-* Visualize carbon emissions data
+* Visualizes carbon emissions data
 * Track:
 
   * Total emissions
